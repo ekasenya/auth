@@ -2,24 +2,23 @@ import random
 from typing import Optional
 
 import uvicorn
+from authlib.jose import RSAKey
 from fastapi import FastAPI, Depends, status, Response
 from sqlalchemy.exc import IntegrityError
 
 from app.core.config import config
 from app.core.deps import get_user_repository
+from app.core.exception_handlers import default_exception_handler
 from app.middleware.auth import AuthMiddleware
 from app.middleware.prometheus import metrics, PrometheusMiddleware
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserInfo, User, UserUpdate
-from app.core.exceptions import AuthException
-from app.core.exception_handlers import auth_exception_handler
 
 app = FastAPI()
 app.add_middleware(PrometheusMiddleware, app_name=config.APP_NAME)
-app.add_middleware(AuthMiddleware, public_key=config.AUTH_PUBLIC_KEY_DICT)
-app.add_exception_handler(exc_class_or_status_code=AuthException, handler=auth_exception_handler)
+app.add_middleware(AuthMiddleware, public_key=RSAKey.import_dict_key(config.AUTH_PUBLIC_KEY_DICT))
+app.add_exception_handler(exc_class_or_status_code=Exception, handler=default_exception_handler)
 app.add_route("/metrics", metrics)
-
 
 
 @app.get('/')

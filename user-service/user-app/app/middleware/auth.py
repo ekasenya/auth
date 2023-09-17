@@ -18,7 +18,7 @@ class AuthMiddleware:
         self._public_key = public_key
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope.get("path") or scope["path"] in self._IGNORE_PATHS:
+        if not scope.get("path") or scope["path"] in self._IGNORE_PATHS:
             await self._app(scope, receive, send)
             return
 
