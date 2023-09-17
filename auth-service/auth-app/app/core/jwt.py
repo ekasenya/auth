@@ -1,6 +1,6 @@
 from authlib.jose import JsonWebKey, RSAKey
 
-from config import config
+from .config import config
 
 
 def setup_jwk(app) -> JsonWebKey:
