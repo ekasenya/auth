@@ -16,7 +16,7 @@ from app.core.exception_handlers import auth_exception_handler
 
 app = FastAPI()
 app.add_middleware(PrometheusMiddleware, app_name=config.APP_NAME)
-app.add_middleware(AuthMiddleware, public_key=config.AUTH_PUBLIC_KEY)
+app.add_middleware(AuthMiddleware, public_key=config.AUTH_PUBLIC_KEY_DICT)
 app.add_exception_handler(exc_class_or_status_code=AuthException, handler=auth_exception_handler)
 app.add_route("/metrics", metrics)
 
