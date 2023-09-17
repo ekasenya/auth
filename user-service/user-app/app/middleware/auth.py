@@ -1,3 +1,4 @@
+import datetime
 import time
 
 from authlib.jose import jwt, RSAKey
@@ -34,5 +35,9 @@ class AuthMiddleware:
             raise AuthException(message='Bad jwt token signature')
 
         exp = token.get("exp")
-        if exp > time.time():
+        if exp < datetime.datetime.now().timestamp():
             raise AuthException(message="Jwt token expired")
+
+        scope.setdefault("extensions", {})["username"] = token["username"]
+
+        await self._app(scope, receive, send)

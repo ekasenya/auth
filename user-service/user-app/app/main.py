@@ -7,7 +7,7 @@ from fastapi import FastAPI, Depends, status, Response
 from sqlalchemy.exc import IntegrityError
 
 from app.core.config import config
-from app.core.deps import get_user_repository
+from app.core.deps import get_user_repository, get_username
 from app.core.exception_handlers import default_exception_handler
 from app.middleware.auth import AuthMiddleware
 from app.middleware.prometheus import metrics, PrometheusMiddleware
@@ -33,17 +33,14 @@ async def check_health():
 
 @app.post('/user', response_model=User, status_code=status.HTTP_201_CREATED)
 async def create_user(
-        user_info: UserInfo,
+        user_info: UserUpdate,
         response: Response,
+        user_name: str = Depends(get_username),
         user_repository: UserRepository = Depends(get_user_repository),
 ):
-    if random.randrange(1, 50) == 1:
-        response.status_code = random.choice([500, 501, 502, 503])
-        return
-
     try:
         return await user_repository.create_user(
-            user_name=user_info.user_name,
+            user_name=user_name,
             first_name=user_info.first_name,
             last_name=user_info.last_name,
             email=user_info.email
@@ -56,18 +53,20 @@ async def create_user(
 async def get_user_by_id(
         user_id: int,
         response: Response,
+        user_name: str = Depends(get_username),
         user_repository: UserRepository = Depends(get_user_repository),
 ):
-    if random.randrange(1, 50) == 1:
-        response.status_code = random.choice([500, 501, 502, 503])
-        return
-
     user = await user_repository.get_user_by_id(
         user_id=user_id
     )
 
     if not user:
         response.status_code = status.HTTP_404_NOT_FOUND
+        return
+
+    if user.user_info.user_name != user_name:
+        response.status_code = status.HTTP_403_FORBIDDEN
+        return
 
     return user
 
@@ -76,18 +75,24 @@ async def get_user_by_id(
 async def get_user_by_id(
         user_id: int,
         response: Response,
+        user_name: str = Depends(get_username),
         user_repository: UserRepository = Depends(get_user_repository),
 ):
-    if random.randrange(1, 50) == 1:
-        response.status_code = random.choice([500, 501, 502, 503])
-        return
-
-    user = await user_repository.delete_user(
+    user = await user_repository.get_user_by_id(
         user_id=user_id
     )
 
     if not user:
         response.status_code = status.HTTP_404_NOT_FOUND
+        return
+
+    if user.user_info.user_name != user_name:
+        response.status_code = status.HTTP_403_FORBIDDEN
+        return
+
+    user = await user_repository.delete_user(
+        user_id=user_id
+    )
 
     return user
 
@@ -97,10 +102,19 @@ async def update_user_by_id(
         user_id: int,
         user_update: UserUpdate,
         response: Response,
+        user_name: str = Depends(get_username),
         user_repository: UserRepository = Depends(get_user_repository),
 ):
-    if random.randrange(1, 50) == 1:
-        response.status_code = random.choice([500, 501, 502, 503])
+    user = await user_repository.get_user_by_id(
+        user_id=user_id
+    )
+
+    if not user:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return
+
+    if user.user_info.user_name != user_name:
+        response.status_code = status.HTTP_403_FORBIDDEN
         return
 
     user = await user_repository.update_user(
@@ -109,9 +123,6 @@ async def update_user_by_id(
         last_name=user_update.last_name,
         email=user_update.email
     )
-
-    if not user:
-        response.status_code = status.HTTP_404_NOT_FOUND
 
     return user
 

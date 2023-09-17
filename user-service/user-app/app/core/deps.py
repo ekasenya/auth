@@ -1,6 +1,6 @@
 from typing import AsyncGenerator
 
-from fastapi import Depends
+from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncConnection
 
 from app.db.engine import engine
@@ -14,3 +14,7 @@ async def get_connection() -> AsyncGenerator[AsyncConnection, None]:
 
 async def get_user_repository(db_connection: AsyncConnection = Depends(get_connection)):
     return UserRepository(db_connection=db_connection)
+
+
+def get_username(request: Request) -> str:
+    return request.scope["extensions"].get("username")
