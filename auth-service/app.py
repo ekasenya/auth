@@ -9,7 +9,7 @@ from src import auth, forms, jwt, storage
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
-    templates_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'src/templates')
+    templates_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'auth-app/src/templates')
 
     app = web.Application(debug=True)
     jwt.setup_jwk(app)
