@@ -1,37 +1,24 @@
-import os
 import random
-import time
 from typing import Optional
 
 import uvicorn
 from fastapi import FastAPI, Depends, status, Response
 from sqlalchemy.exc import IntegrityError
 
+from app.core.config import config
 from app.core.deps import get_user_repository
+from app.middleware.auth import AuthMiddleware
 from app.middleware.prometheus import metrics, PrometheusMiddleware
 from app.repositories.user_repository import UserRepository
 from app.schemas.user import UserInfo, User, UserUpdate
-
-APP_NAME = os.environ.get("APP_NAME")
+from app.core.exceptions import AuthException
+from app.core.exception_handlers import auth_exception_handler
 
 app = FastAPI()
-app.add_middleware(PrometheusMiddleware, app_name=APP_NAME)
+app.add_middleware(PrometheusMiddleware, app_name=config.APP_NAME)
+app.add_middleware(AuthMiddleware, public_key=config.AUTH_PUBLIC_KEY)
+app.add_exception_handler(exc_class_or_status_code=AuthException, handler=auth_exception_handler)
 app.add_route("/metrics", metrics)
-
-
-config = {
-    'DB_NAME': os.environ.get('DB_NAME', 'user-db'),
-    'DB_HOST': os.environ['DB_HOST'],
-    'DB_PORT': os.environ['DB_PORT'],
-    'GREETING': os.environ.get('GREETING', 'Hello'),
-}
-
-
-def _return_random_500(response: Response):
-    if random.randrange(1, 50) == 1:
-        response.status_code = random.choice([200, 200, 300, 400, 500, 501, 502, 503])
-        return {"path": "/random_status"}
-
 
 
 
@@ -43,12 +30,6 @@ async def root():
 @app.get('/health')
 async def check_health():
     return {"status": "OK"}
-
-
-@app.get("/random_sleep")
-async def random_sleep(response: Response):
-    time.sleep(random.randint(0, 200) * 0.001)
-    return {"path": "/random_sleep"}
 
 
 @app.post('/user', response_model=User, status_code=status.HTTP_201_CREATED)
