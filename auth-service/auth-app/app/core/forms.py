@@ -3,9 +3,11 @@ import http
 import aiohttp_jinja2
 from aiohttp import web, hdrs
 
-routes = web.RouteTableDef()
+from app.db.engine import engine
+from app.repositories.user_repository import UserRepository
 
-creds = {}
+
+routes = web.RouteTableDef()
 
 
 @routes.route(hdrs.METH_GET, '/logout')
@@ -30,7 +32,11 @@ async def login(req: web.Request):
     password = data.get('password')
     state_key = data.get('state')
 
-    if not creds.get(username) or creds[username] != password:
+    async with engine.connect() as connection:
+        user_repository = UserRepository(db_connection=connection)
+        user = await user_repository.get_user_by_username(username=username)
+
+    if not user or user.password != password:
         return web.Response(status=http.HTTPStatus.UNAUTHORIZED, text='Incorrect login or password')
 
     session_id = storage.create_session(username=username)
@@ -57,5 +63,8 @@ async def register(req: web.Request):
     username = data.get('username')
     password = data.get('password')
 
-    creds[username] = password
+    async with engine.connect() as connection:
+        user_repository = UserRepository(db_connection=connection)
+        await user_repository.create_user(user_name=username, password=password)
+
     raise web.HTTPFound(location='/login')
