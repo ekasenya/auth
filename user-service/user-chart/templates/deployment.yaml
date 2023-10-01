@@ -1,7 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "user-chart.fullname" . }}
+  name: {{ .Values.app_name }}
+  namespace: {{ .Values.service.namespace }}
   labels:
     {{- include "user-chart.labels" . | nindent 4 }}
 spec:
@@ -53,11 +54,11 @@ spec:
                 name: user-secret-helm
           livenessProbe:
             httpGet:
-              path: /
+              path: /health
               port: web
           readinessProbe:
             httpGet:
-              path: /
+              path: /health
               port: web
           resources:
             {{- toYaml .Values.resources | nindent 12 }}

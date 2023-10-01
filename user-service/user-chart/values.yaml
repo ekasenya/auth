@@ -1,11 +1,13 @@
 app_name: user-service
-image: ekasenya/user-app:v3.9
+image: ekasenya/user-app:v4.1
 
 replicaCount: 2
 
 service:
+  name: user-service
   type: NodePort
-  port: 9099
+  port: 80
+  namespace: authapp
 
 postgresql:
   enabled: true
@@ -17,11 +19,6 @@ postgresql:
 
 job:
   restartPolicy: OnFailure
-
-ingress:
-  host:  arch.homework
-  path: /user-service(/|$)(.*)
-  port: 9099
 
 metrics:
   serviceMonitor:
