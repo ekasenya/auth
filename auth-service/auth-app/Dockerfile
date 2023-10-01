@@ -2,10 +2,10 @@ FROM python:3.7-slim
 
 EXPOSE 8080
 
-RUN mkdir /app
-COPY requirements.txt /requirements.txt
-RUN pip install --no-cache-dir -r /requirements.txt
+WORKDIR /code
+COPY requirements.txt /code/requirements.txt
+RUN pip install --no-cache-dir --upgrade -r /code/requirements.txt
 
-COPY . /app
+COPY app /code/app
 
-CMD ["python", "/app/app.py"]
+CMD ["python", "/code/app/main.py"]
