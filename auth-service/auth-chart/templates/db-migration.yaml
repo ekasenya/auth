@@ -1,0 +1,44 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: auth-service-db-migration
+  namespace: {{ .Values.service.namespace }}
+spec:
+  backoffLimit: 1
+  template:
+    spec:
+      initContainers:
+        - name: check-db-ready
+          image: postgres:latest
+          env:
+            - name: POSTGRES_HOST
+              value: {{ include "postgresql.fullname" . | quote }}
+            - name: POSTGRES_PORT
+              value: {{ .Values.postgresql.service.port | quote }}
+          command:
+            - sh
+            - "-c"
+            - |
+              until pg_isready -h $POSTGRES_HOST  -p  $POSTGRES_PORT; 
+              do echo waiting for database; sleep 2; done;
+      containers:
+      - name: auth-migrations
+        image: "{{ .Values.image }}"
+        command: ["alembic", "upgrade", "head"]
+        env:
+          - name: DB_HOST
+            valueFrom:
+              configMapKeyRef:
+                name: auth-config-helm
+                key: DB_HOST
+          - name: DB_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: auth-config-helm
+                key: DB_PORT
+        envFrom:
+          - configMapRef:
+              name: auth-config-helm
+          - secretRef:
+              name: auth-secret-helm
+      restartPolicy: {{ .Values.job.restartPolicy }}

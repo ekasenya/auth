@@ -1,11 +1,21 @@
 app_name: auth-service
-image: ekasenya/auth-app:v1.4
+image: ekasenya/auth-app:v2.0
 
 replicaCount: 2
 
 service:
+  name: auth-service
   type: NodePort
-  port: 9099
+  port: 80
+  namespace: authapp
+
+postgresql:
+  enabled: true
+  postgresqlUsername: user
+  postgresqlPassword: user
+  postgresqlDatabase: auth-db
+  service:
+      port: "5432"
 
 job:
   restartPolicy: OnFailure

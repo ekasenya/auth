@@ -1,7 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "auth-chart.fullname" . }}
+  name: {{ .Values.service.name }}
+  namespace: {{ .Values.service.namespace }}
   labels:
     {{- include "auth-chart.labels" . | nindent 4 }}
 spec:
@@ -33,6 +34,19 @@ spec:
             - name: auth-port
               containerPort: 8085
               protocol: TCP
+          env:
+            - name: APP_NAME
+              value: {{ .Values.app_name }}
+            - name: DB_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: auth-config-helm
+                  key: DB_HOST
+            - name: DB_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: auth-config-helm
+                  key: DB_PORT
           envFrom:
             - configMapRef:
                 name: auth-config-helm

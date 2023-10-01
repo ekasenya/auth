@@ -2,11 +2,12 @@
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  name: {{ include "auth-chart.fullname" . }}
+  name: {{ .Values.service.name }}
+  namespace: {{ .Values.service.namespace }}
   labels:
     {{- include "auth-chart.labels" . | nindent 4 }}
 spec:
-  jobLabel: {{ include "auth-chart.fullname" . }}
+  jobLabel: {{ .Values.service.name }}
   namespaceSelector:
     matchNames:
     - "{{ $.Release.Namespace }}"
