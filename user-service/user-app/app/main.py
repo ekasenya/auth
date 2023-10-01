@@ -1,4 +1,3 @@
-import random
 from typing import Optional
 
 import uvicorn
@@ -12,7 +11,7 @@ from app.core.exception_handlers import default_exception_handler
 from app.middleware.auth import AuthMiddleware
 from app.middleware.prometheus import metrics, PrometheusMiddleware
 from app.repositories.user_repository import UserRepository
-from app.schemas.user import UserInfo, User, UserUpdate
+from app.schemas.user import User, UserUpdate
 
 app = FastAPI()
 app.add_middleware(PrometheusMiddleware, app_name=config.APP_NAME)

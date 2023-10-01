@@ -12,6 +12,7 @@ from app.core.exceptions import AuthException
 class AuthMiddleware:
     _IGNORE_PATHS = {
         "/health",
+        "/metrics"
     }
 
     def __init__(self, app: ASGIApp, public_key: RSAKey) -> None:
