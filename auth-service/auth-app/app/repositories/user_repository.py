@@ -1,8 +1,8 @@
 from typing import Optional
 
-from app.models.user import users
-from app.repositories.base_sql_alchemy_repository import BaseSqlAlchemyRepository
-from app.schemas.user import User
+from models.user import users
+from repositories.base_sql_alchemy_repository import BaseSqlAlchemyRepository
+from schemas.user import User
 from sqlalchemy import insert, select, Row
 
 

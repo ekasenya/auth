@@ -3,8 +3,8 @@ import http
 import aiohttp_jinja2
 from aiohttp import web, hdrs
 
-from app.db.engine import engine
-from app.repositories.user_repository import UserRepository
+from db.engine import engine
+from repositories.user_repository import UserRepository
 
 
 routes = web.RouteTableDef()
